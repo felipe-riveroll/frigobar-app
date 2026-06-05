@@ -1,15 +1,16 @@
 import { useState, useRef } from "react";
 import { AppLayout } from "@/components/ui/Layout";
-import { rooms, products, recentConsumptions, type Room } from "@/lib/data";
+import { products, recentConsumptions, type Room } from "@/lib/data";
+import { useRoomsAndGuests } from "@/hooks/use-cloudbeds";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BedDouble, Plus, Receipt, Download, Share2, Minus, Trash2 } from "lucide-react";
+import { BedDouble, Plus, Receipt, Download, Share2, Minus, Trash2, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SignatureCanvas from 'react-signature-canvas';
 import { jsPDF } from "jspdf";
@@ -17,6 +18,7 @@ import html2canvas from "html2canvas";
 
 export default function Rooms() {
   const { toast } = useToast();
+  const { data: rooms = [], isLoading, error, refetch } = useRoomsAndGuests();
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState("");
@@ -144,12 +146,63 @@ export default function Rooms() {
     }
   };
 
+  // --- Loading state ---
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-3xl font-heading font-bold tracking-tight">Habitaciones</h2>
+            <p className="text-muted-foreground">Gestiona el consumo por habitación.</p>
+          </div>
+          <div className="flex items-center justify-center py-20">
+            <div className="flex flex-col items-center gap-3 text-muted-foreground">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <span className="text-sm">Cargando habitaciones desde CloudBeds...</span>
+            </div>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // --- Error state ---
+  if (error) {
+    return (
+      <AppLayout>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-3xl font-heading font-bold tracking-tight">Habitaciones</h2>
+            <p className="text-muted-foreground">Gestiona el consumo por habitación.</p>
+          </div>
+          <div className="flex items-center justify-center py-20">
+            <div className="flex flex-col items-center gap-3 text-center max-w-md">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+              <span className="text-sm text-destructive font-medium">Error al cargar habitaciones</span>
+              <span className="text-xs text-muted-foreground">{error.message}</span>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                Reintentar
+              </Button>
+            </div>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-heading font-bold tracking-tight">Habitaciones</h2>
-          <p className="text-muted-foreground">Gestiona el consumo por habitación.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-heading font-bold tracking-tight">Habitaciones</h2>
+            <p className="text-muted-foreground">Gestiona el consumo por habitación.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+            Actualizar
+          </Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

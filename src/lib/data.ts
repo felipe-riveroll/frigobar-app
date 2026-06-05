@@ -11,6 +11,8 @@ export type Room = {
   number: string;
   guestName?: string;
   status: "occupied" | "vacant" | "cleaning";
+  roomTypeID?: string;
+  reservationID?: string;
 };
 
 export type Consumption = {
