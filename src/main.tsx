@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "sonner";
 import "./index.css";
 import Index from "./pages/Index";
 import Inventory from "./pages/Inventory";
@@ -15,5 +16,6 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/rooms" element={<Rooms />} />
       </Routes>
     </BrowserRouter>
+    <Toaster richColors position="top-right" />
   </StrictMode>
 );
